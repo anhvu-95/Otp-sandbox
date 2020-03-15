@@ -9,7 +9,7 @@ import {Server} from 'net'
 import 'reflect-metadata'
 import {Action, useExpressServer} from 'routing-controllers'
 import {createConnection, getConnection} from 'typeorm'
-import {BearerController, CompanyController, FileController, LanguageController, LicenseController,  MainController, UsersController} from './controller'
+import {BearerController, MainController, UsersController} from './controller'
 import {Bearer} from './entity'
 
 export default class App {
@@ -103,11 +103,7 @@ export default class App {
             controllers: [
                 BearerController,
                 UsersController,
-                CompanyController,
                 MainController,
-                FileController,
-                LanguageController,
-                LicenseController,
             ],
             currentUserChecker: async (action: Action) => {
                 try {

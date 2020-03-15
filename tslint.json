@@ -15,7 +15,8 @@
         "no-floating-promises": true,
         "no-trailing-whitespace": false,
         "quotemark": [true, "single"],
-        "max-line-length": [false]
+        "max-line-length": [false],
+        "no-bitwise": false
     },
     "rulesDirectory": []
 }

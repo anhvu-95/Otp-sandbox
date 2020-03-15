@@ -1,28 +1,23 @@
 /**
  * Created by Hai Anh on 3/13/20
  */
-import axios from 'axios'
+import * as twilio from 'twilio'
 
 export class TwilioHelper {
-    private twilioAuthyToken = process.env.TWILIO_AUTHY_API_KEY
-    private baseEndPoint = 'https://api.authy.com/protected/json'
+    private client
+    private twilioAccountSid = process.env.TWILIO_SID
+    private twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+    private twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 
-    public async createAuthyUser(email: string, phoneNumber: string): Promise<any> {
-        const data = {
-            email,
-            phoneNumber
-        }
-        return axios.post(`${this.baseEndPoint}/users/new?api_key=${this.twilioAuthyToken}`, data)
+    constructor() {
+        this.client = twilio(this.twilioAccountSid, this.twilioAuthToken)
     }
 
-    public async getOtp(authyId: string): Promise<any> {
-        return axios.get(`${this.baseEndPoint}/sms/${authyId}?api_key=${this.twilioAuthyToken}&force=true&locale=fi`)
-    }
-
-    public async verifyOtp(authyId: string, token: string): Promise<any> {
-        const headers = {
-            'X-Authy-API-Key': this.twilioAuthyToken
-        }
-        return axios.get(`${this.baseEndPoint}/verify/${token}/${authyId}`, {headers})
+    public async sendMessage(to: number, message: string) {
+        return this.client.messages.create({
+            body: message,
+            from: this.twilioPhoneNumber,
+            to
+        })
     }
 }
