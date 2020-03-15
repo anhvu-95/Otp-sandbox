@@ -1,0 +1,20 @@
+node_modules/
+.idea/
+src/**/*.js
+src/**/*.map
+certs/
+
+# Ignore application configuration
+/config/application.yml
+yarn-error.log
+yarn.lock
+
+ormconfig.json
+
+figaro.json
+build
+.env
+.vscode/
+doc/
+coverage/
+.nyc_output/

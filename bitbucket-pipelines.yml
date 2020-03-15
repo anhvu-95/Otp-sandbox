@@ -1,0 +1,84 @@
+image: node:10.15.0
+pipelines:
+  default:
+  - step:
+      caches:
+      - node
+      script:
+      - yarn install
+      - yarn build
+      - yarn start
+      services:
+      - postgres
+  branches:
+    master:
+    - step:
+        deployment: production
+        script:
+        - pipe: atlassian/google-app-engine-deploy:0.4.0
+          variables:
+            KEY_FILE: $KEY_FILE
+            PROJECT: 'kevyttaksi'
+            DEPLOYABLES: 'app.yaml'
+            PROMOTE: 'false'
+            STOP_PREVIOUS_VERSION: 'false'
+            SALT_ROUNDS: $SALT_ROUND
+            BACKEND_URL: $BACKEND_URL
+            FRONTEND_URL: $FRONTEND_URL
+            MAILGUN_DOMAIN: $MAILGUN_DOMAIN
+            MAILGUN_API_KEY: $MAILGUN_API_KEY
+            TYPEORM_CONNECTION: 'postgres'
+            TYPEORM_HOST: $TYPEORM_HOST
+            TYPEORM_DATABASE: $TYPEORM_DATABASE
+            TYPEORM_USERNAME: $TYPEORM_USERNAME
+            TYPEORM_PASSWORD: $TYPEORM_PASSWORD
+            TYPEORM_SYNCHRONIZE: 'false'
+            TYPEORM_LOGGING: '["error"]'
+            TYPEORM_ENTITIES: 'build/entity/*.js'
+            TYPEORM_MIGRATIONS: 'build/migrations/*.js'
+            TYPEORM_ENTITIES_DIR: 'build/entity'
+            TYPEORM_MIGRATIONS_DIR: 'build/migrations'
+            TYPEORM_DRIVER_EXTRA: $TYPEORM_DRIVER_EXTRA
+#    develop:
+#    - step:
+#        deployment: staging
+#        script:
+#        - pipe: atlassian/google-app-engine-deploy:0.4.0
+#          variables:
+#            KEY_FILE: $KEY_FILE
+#            PROJECT: 'kevyttaksi'
+#            DEPLOYABLES: 'staging.yaml'
+#            SALT_ROUNDS: $SALT_ROUNDS
+#            BACKEND_URL: $BACKEND_URL
+#            FRONTEND_URL: $FRONTEND_URL
+#            MAILGUN_DOMAIN: $MAILGUN_DOMAIN
+#            MAILGUN_API_KEY: $MAILGUN_API_KEY
+#            TYPEORM_CONNECTION: 'postgres'
+#            TYPEORM_HOST: $TYPEORM_HOST
+#            TYPEORM_DATABASE: $TYPEORM_DATABASE
+#            TYPEORM_USERNAME: $TYPEORM_USERNAME
+#            TYPEORM_PASSWORD: $TYPEORM_PASSWORD
+#            TYPEORM_PORT: $TYPEORM_PORT
+#            TYPEORM_SYNCHRONIZE: "true"
+#            TYPEORM_LOGGING: "true"
+#            TYPEORM_ENTITIES: 'build/entity/*.js'
+#            TYPEORM_MIGRATIONS: 'build/migrations/*.js'
+#            TYPEORM_ENTITIES_DIR: 'build/entity'
+#            TYPEORM_MIGRATIONS_DIR: 'build/migrations'
+#            TYPEORM_DRIVER_EXTRA: '{ "ssl": true }'
+#            S3_BUCKET_NAME: 'kevyttaksi'
+#            IAM_USER_KEY: '6YIYHQRZVHAHKXH2FCCY'
+#            IAM_USER_SECRET: 'Q7tRKtoCcVjNIiTbcxXyLfs15QiDG6qj5VHE2ijk8fE'
+#            S3_ENDPOINT: 'https://fra1.digitaloceanspaces.com/development'
+
+definitions:
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_DB: $TYPEORM_DATABASE
+        POSTGRES_USER: $TYPEORM_USERNAME
+        POSTGRES_PASSWORD: $TYPEORM_PASSWORD
+        POSTGRES_CONNECTION: 'postgres'
+        POSTGRES_HOST: $TYPEORM_HOST
+        POSTGRES_PORT: $TYPEORM_PORT

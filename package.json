@@ -1,0 +1,85 @@
+{
+  "name": "kotidiili-backend",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "prepare": "npm run gcp-build",
+    "pretest": "npm run gcp-build",
+    "dev": "ts-node-dev --respawn --ignore-watch node_modules src/index.ts",
+    "start": "node build/index.js",
+    "lint-fix": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
+    "build": "tsc -p .",
+    "gcp-build": "tsc -p .",
+    "test": "NODE_ENV=test mocha -r ts-node/register src/tests/index.ts",
+    "doc": "apidoc -i src/ -o doc/ && open doc/index.html",
+    "deploy": "yarn install && gcloud config set project kevyttaksi && gcloud beta app deploy"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "cloud-repo-tools": {
+    "test": {
+      "app": {
+        "msg": "Hello from Vertics!"
+      }
+    },
+    "requiresKeyFile": true,
+    "requiresProjectId": true
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "@types/html5-to-pdf": "^3.1.0",
+    "aws-sdk": "^2.493.0",
+    "axios": "^0.19.0",
+    "bcryptjs": "2.4.3",
+    "body-parser": "1.18.2",
+    "cors": "2.8.4",
+    "dotenv": "^8.2.0",
+    "express": "4.16.3",
+    "helmet": "3.10.0",
+    "lodash": "^4.17.11",
+    "mailgun-js": "^0.22.0",
+    "method-override": "2.3.10",
+    "moment": "2.20.1",
+    "morgan": "^1.9.1",
+    "multer": "^1.4.1",
+    "pg": "7.4.1",
+    "reflect-metadata": "0.1.12",
+    "routing-controllers": "0.7.7",
+    "sharp": "^0.22.1",
+    "swagger-test": "^0.7.3",
+    "twilio": "^3.40.0",
+    "typeorm": "^0.2.18",
+    "typescript": "^3.5.3",
+    "uuid": "^3.3.2",
+    "validator": "9.4.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "2.4.1",
+    "@types/body-parser": "1.16.8",
+    "@types/chai": "4.1.3",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/chai-http": "3.0.3",
+    "@types/express": "4.11.1",
+    "@types/lodash": "4.14.92",
+    "@types/mailgun-js": "^0.16.3",
+    "@types/mocha": "5.2.0",
+    "@types/node": "9.6.6",
+    "@types/uuid": "^3.4.4",
+    "apidoc": "^0.17.7",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-http": "^4.3.0",
+    "mocha": "^6.1.4",
+    "ts-node": "^6.2.0",
+    "ts-node-dev": "1.0.0-pre.26",
+    "tslint": "^5.18.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:vertics/kotidiili.backend.git"
+  },
+  "description": "kotidiili.backend"
+}
