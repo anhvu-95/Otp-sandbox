@@ -17,7 +17,7 @@ export class TwilioHelper {
         return this.client.messages.create({
             body: message,
             from: this.twilioPhoneNumber,
-            to
+            to,
         })
     }
 }

@@ -5,7 +5,7 @@ import * as base32 from 'hi-base32'
 export class OtpHelper {
 
     // Generate TOTP
-    public generateTotp = (secret, window = 0) => {
+    public generateTotp = (window = 0) => {
         const counter = Math.floor(Date.now() / 30000)
         return this.generateHotp(counter + window)
     }
@@ -17,7 +17,8 @@ export class OtpHelper {
         }
 
         for (let errorWindow = -window; errorWindow <= +window; errorWindow++) {
-            const totp = this.generateTotp(process.env.APP_SECRET, errorWindow)
+            const totp = this.generateTotp(errorWindow)
+            console.log(token, totp)
             if (token === totp) {
                 return true
             }
@@ -33,15 +34,15 @@ export class OtpHelper {
 // Generate hmac
     private generateHmac = (counter) => {
         const decodedSecret = base32.decode.asBytes(process.env.APP_SECRET)
-        const buffer = Buffer.alloc(8);
+        const buffer = Buffer.alloc(8)
         for (let i = 0; i < 8; i++) {
-            buffer[7 - i] = counter & 0xff;
-            counter = counter >> 8;
+            buffer[7 - i] = counter & 0xff
+            counter = counter >> 8
         }
         // Generate hmac value
         const hmac = crypto.createHmac('sha1', Buffer.from(decodedSecret))
-        return hmac.update(buffer)
-
+        hmac.update(buffer)
+        return hmac.digest()
     }
 
 // Truncate hmac
