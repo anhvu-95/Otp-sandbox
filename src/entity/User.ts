@@ -52,9 +52,6 @@ export class User {
     @Column({default: false})
     public isDeactivated: boolean
 
-    @Column({nullable: true})
-    public authyId: string
-
     @Exclude({toPlainOnly: true})
     @Column('text')
     public password: string
