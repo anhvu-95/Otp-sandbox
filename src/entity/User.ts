@@ -6,13 +6,14 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    OneToMany,
+    OneToMany, OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm'
 
 import {UserRole} from '../utils/values'
 import {Bearer} from './Bearer'
+import {UserOtp} from './UserOtp'
 
 @Entity()
 export class User {
@@ -33,14 +34,6 @@ export class User {
     @Column('varchar', {nullable: true})
     public phoneNumber: string
 
-    @Column('varchar', {nullable: true})
-    public address: string
-
-    @Column('varchar', {nullable: true})
-    public city: string
-    @Column('varchar', {nullable: true, length: 8})
-
-    public postalCode: string
     @Column({
         type: 'enum',
         enum: UserRole,
@@ -55,6 +48,9 @@ export class User {
     @Exclude({toPlainOnly: true})
     @Column('text')
     public password: string
+
+    @OneToOne(() => UserOtp, userOtp => userOtp.user)
+    public otp: UserOtp
 
     @CreateDateColumn()
     public createdAt: Date
