@@ -11,7 +11,6 @@ import {
     UpdateDateColumn,
 } from 'typeorm'
 
-import {UserRole} from '../utils/values'
 import {Bearer} from './Bearer'
 import {UserOtp} from './UserOtp'
 
@@ -22,24 +21,11 @@ export class User {
     public id: number
 
     @Column('varchar', {length: 255})
-    public firstName: string
-
-    @Column('varchar', {length: 255})
-    public lastName: string
-
-    @Column('varchar', {length: 255})
     @IsEmail()
     public email: string
 
     @Column('varchar', {nullable: true})
     public phoneNumber: string
-
-    @Column({
-        type: 'enum',
-        enum: UserRole,
-        default: UserRole.DRIVER,
-    })
-    public role: string
 
     @Exclude()
     @Column({default: false})
@@ -57,10 +43,6 @@ export class User {
 
     @UpdateDateColumn()
     public updatedAt: Date
-
-    @Exclude({toPlainOnly: true})
-    @Column('uuid', {nullable: true})
-    public resetPasswordCode: string
 
     @OneToMany(() => Bearer, bearer => bearer.user, {onDelete: 'CASCADE'})
     public bearers: Bearer[]

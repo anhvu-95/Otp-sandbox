@@ -12,9 +12,7 @@ import {
 import {Connection, getConnection, Repository} from 'typeorm'
 import * as uuidv4 from 'uuid/v4'
 import {Bearer, User} from '../entity'
-import {ConflictError} from '../error'
 import {errorHelper} from '../helpers/ErrorHelper'
-import {HTTP_CODE, UserRole} from '../utils/values'
 
 @JsonController()
 export class UsersController {
@@ -86,24 +84,13 @@ export class UsersController {
     @Post('/users')
     public async createDriver(@Body({required: true, validate: true}) post: User, @Res() res: Response) {
         try {
-            const existingUser = await this.users.findOne({where: {email: post.email}})
-            if (existingUser) {
-                throw new ConflictError('Existing user')
-            }
             const newUser = new User()
-            newUser.firstName = post.firstName
-            newUser.lastName = post.lastName
             newUser.email = post.email
             newUser.phoneNumber = post.phoneNumber
-            newUser.role = UserRole.DRIVER
             const randomPassword = uuidv4()
             await newUser.setPassword(randomPassword)
             const userInsertRes = await this.users.save(newUser)
-            newUser.id = userInsertRes.id
-            const resetPasswordCode = uuidv4()
-            await this.users.update(newUser.id, {resetPasswordCode})
-            const findNewUser = await this.users.findOne(newUser.id, {relations: ['license', 'avatar', 'companies', 'languages']})
-            return res.status(HTTP_CODE.CREATED).send({message: 'Created', user: findNewUser})
+            return res.status(201).send({message: 'Created', user: userInsertRes})
         } catch (error) {
             errorHelper(error, error.message)
         }
