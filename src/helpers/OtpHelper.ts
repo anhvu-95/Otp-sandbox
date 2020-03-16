@@ -5,20 +5,19 @@ import * as base32 from 'hi-base32'
 export class OtpHelper {
 
     // Generate TOTP
-    public generateTotp = (window = 0) => {
+    public generateTotp = (secret, window = 0) => {
         const counter = Math.floor(Date.now() / 30000)
-        return this.generateHotp(counter + window)
+        return this.generateHotp(secret, counter + window)
     }
 
 // Verify TOTP
-    public verifyTotp = (token, window = 0) => {
+    public verifyTotp = (secret, token, window = 0) => {
         if (Math.abs(+window) > 10) {
             return false
         }
 
         for (let errorWindow = -window; errorWindow <= +window; errorWindow++) {
-            const totp = this.generateTotp(errorWindow)
-            console.log(token, totp)
+            const totp = this.generateTotp(secret, errorWindow)
             if (token === totp) {
                 return true
             }
@@ -26,14 +25,14 @@ export class OtpHelper {
         return false
     }
 
-    private generateSecret = (length) => {
+    public generateSecret = (length) => {
         const randomBuffer = crypto.randomBytes(length)
         return base32.encode(randomBuffer).replace(/=/g, '')
     }
 
 // Generate hmac
-    private generateHmac = (counter) => {
-        const decodedSecret = base32.decode.asBytes(process.env.APP_SECRET)
+    private generateHmac = (secret, counter) => {
+        const decodedSecret = base32.decode.asBytes(secret)
         const buffer = Buffer.alloc(8)
         for (let i = 0; i < 8; i++) {
             buffer[7 - i] = counter & 0xff
@@ -56,8 +55,8 @@ export class OtpHelper {
     }
 
 // Generate HOTP
-    private generateHotp = (counter) => {
-        const hmac = this.generateHmac(counter)
+    private generateHotp = (secret, counter) => {
+        const hmac = this.generateHmac(secret, counter)
         const code = this.truncateHmac(hmac)
         // Extract result to get 6 digits
         return code % 10 ** 6

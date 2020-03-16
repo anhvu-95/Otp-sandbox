@@ -11,7 +11,10 @@ export class UserOtp {
     public id: number
 
     @Column()
-    public otp: string
+    public otp: number
+
+    @Column()
+    public secret: string
 
     @OneToOne(() => User, user => user.otp)
     @JoinColumn()

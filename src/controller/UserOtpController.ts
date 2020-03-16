@@ -4,21 +4,22 @@
 import {BadRequestError, Body, JsonController, Post, UnauthorizedError} from 'routing-controllers'
 import {Connection, getConnection, Repository} from 'typeorm'
 import * as uuidv4 from 'uuid/v4'
-import {Bearer, User} from '../entity'
+import {Bearer, User, UserOtp} from '../entity'
 import {errorHelper} from '../helpers/ErrorHelper'
 import {OtpHelper} from '../helpers/OtpHelper'
-import {TwilioHelper} from '../helpers/TwilioHelper'
 
 @JsonController('/otp')
 export class UserOtpController {
     private users: Repository<User>
     private bearers: Repository<Bearer>
+    private userOtp: Repository<UserOtp>
     private conn: Connection
 
     constructor() {
         this.conn = getConnection()
         this.users = this.conn.getRepository(User)
         this.bearers = this.conn.getRepository(Bearer)
+        this.userOtp = this.conn.getRepository(UserOtp)
     }
 
     /**
@@ -49,15 +50,29 @@ export class UserOtpController {
             if (!user) {
                 throw new BadRequestError('not existing user')
             }
+            const findUserOtp = await this.userOtp.findOne({where: {userId: user.id}})
             const otp = new OtpHelper()
-            const totpCode = otp.generateTotp(0)
-            console.log(totpCode)
+            const secret = otp.generateSecret(20)
+            const totpCode = otp.generateTotp(secret, 0)
+            if (findUserOtp) {
+                await this.userOtp.update(findUserOtp.id, {
+                    secret,
+                    otp: totpCode
+                })
+            } else {
+                const newUserOtp = new UserOtp()
+                newUserOtp.otp = totpCode
+                newUserOtp.secret = secret
+                newUserOtp.user = user
+                await this.userOtp.save(newUserOtp)
+            }
             // const twilio = new TwilioHelper()
             // twilio.sendMessage(post.phoneNumber, `Your otp code is: ${totpCode}`)
             return {
                 message: 'One time password has sent to your message',
             }
         } catch (error) {
+            console.log(error)
             errorHelper(error, 'There was error while resetting password')
         }
     }
@@ -101,10 +116,15 @@ export class UserOtpController {
     @Post('/verify')
     public async verifyOtp(@Body() post: any) {
         try {
+            const findOtp = await this.userOtp.findOne(({otp: post.token}))
+            if (!findOtp) {
+                throw new UnauthorizedError('Token is invalid')
+            }
             const otp = new OtpHelper()
-            const isVerified = otp.verifyTotp(post.token)
+            const isVerified = otp.verifyTotp(findOtp.secret, post.token)
+            await this.userOtp.delete({id: findOtp.id})
             if (isVerified) {
-                const user = await this.users.findOne({where: {authyId: post.authyId}})
+                const user = await this.users.findOne()
                 const findBearer = await this.bearers.findOne({where: {user}})
                 if (findBearer) {
                     const bearer = new Bearer()
@@ -123,6 +143,7 @@ export class UserOtpController {
                     return bearer
                 }
             } else {
+                await this.userOtp.delete({id: findOtp.id})
                 throw new UnauthorizedError('Token is invalid')
             }
         } catch (error) {
