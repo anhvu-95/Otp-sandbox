@@ -7,10 +7,9 @@ import * as methodOverride from 'method-override'
 import * as morgan from 'morgan'
 import {Server} from 'net'
 import 'reflect-metadata'
-import {Action, useExpressServer} from 'routing-controllers'
+import {useExpressServer} from 'routing-controllers'
 import {createConnection, getConnection} from 'typeorm'
-import {BearerController, MainController, UserOtpController, UsersController} from './controller'
-import {Bearer} from './entity'
+import {MainController, UserOtpController, UsersController} from './controller'
 
 export default class App {
 
@@ -101,26 +100,10 @@ export default class App {
             classTransformer: true,
             development: false,
             controllers: [
-                BearerController,
                 UsersController,
                 MainController,
                 UserOtpController,
-            ],
-            currentUserChecker: async (action: Action) => {
-                try {
-                    const bearer = action.request.headers.bearer
-                    const bearerEntity = await getConnection()
-                        .getRepository(Bearer)
-                        .findOne({
-                            where: {
-                                bearer,
-                            },
-                        })
-                    return bearerEntity.user
-                } catch (e) {
-                    return null
-                }
-            },
+            ]
         })
         return this.app
     }

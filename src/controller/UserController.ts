@@ -11,19 +11,17 @@ import {
 } from 'routing-controllers'
 import {Connection, getConnection, Repository} from 'typeorm'
 import * as uuidv4 from 'uuid/v4'
-import {Bearer, User} from '../entity'
+import {User} from '../entity'
 import {errorHelper} from '../helpers/ErrorHelper'
 
 @JsonController()
 export class UsersController {
     private users: Repository<User>
-    private bearers: Repository<Bearer>
     private conn: Connection
 
     constructor() {
         this.conn = getConnection()
         this.users = this.conn.getRepository(User)
-        this.bearers = this.conn.getRepository(Bearer)
     }
 
     /**

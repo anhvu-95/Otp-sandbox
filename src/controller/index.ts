@@ -1,6 +1,5 @@
 import {Get, InternalServerError, JsonController} from 'routing-controllers'
 import {getConnection} from 'typeorm'
-import {BearerController} from './BearerController'
 import {UsersController} from './UserController'
 import {UserOtpController} from './UserOtpController'
 
@@ -18,4 +17,4 @@ class MainController {
     }
 
 }
-export {UsersController, BearerController, MainController, UserOtpController}
+export {UsersController, MainController, UserOtpController}

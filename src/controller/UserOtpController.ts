@@ -3,22 +3,19 @@
  */
 import {BadRequestError, Body, JsonController, Post, UnauthorizedError} from 'routing-controllers'
 import {Connection, getConnection, Repository} from 'typeorm'
-import * as uuidv4 from 'uuid/v4'
-import {Bearer, User, UserOtp} from '../entity'
+import {User, UserOtp} from '../entity'
 import {errorHelper} from '../helpers/ErrorHelper'
 import {OtpHelper} from '../helpers/OtpHelper'
 
 @JsonController('/otp')
 export class UserOtpController {
     private users: Repository<User>
-    private bearers: Repository<Bearer>
     private userOtp: Repository<UserOtp>
     private conn: Connection
 
     constructor() {
         this.conn = getConnection()
         this.users = this.conn.getRepository(User)
-        this.bearers = this.conn.getRepository(Bearer)
         this.userOtp = this.conn.getRepository(UserOtp)
     }
 
@@ -53,7 +50,7 @@ export class UserOtpController {
             const findUserOtp = await this.userOtp.findOne({where: {userId: user.id}})
             const otp = new OtpHelper()
             const secret = otp.generateSecret(20)
-            const totpCode = otp.generateTotp(secret, 0)
+            const totpCode = otp.generateTotp(secret, 1)
             if (findUserOtp) {
                 await this.userOtp.update(findUserOtp.id, {
                     secret,
@@ -72,7 +69,6 @@ export class UserOtpController {
                 message: 'One time password has sent to your message',
             }
         } catch (error) {
-            console.log(error)
             errorHelper(error, 'There was error while resetting password')
         }
     }
@@ -92,7 +88,6 @@ export class UserOtpController {
      *
      * @apiSuccessExample {type} Success-Response:
      *  {
-     *      "bearer": "2c7c724d-cbde-485f-968f-e8053d5201ea",
      *      "createdAt": "2019-07-11T11:04:47.284Z",
      *      "updatedAt": "2019-07-11T11:04:47.284Z",
      *      "user": {
@@ -116,37 +111,22 @@ export class UserOtpController {
     @Post('/verify')
     public async verifyOtp(@Body() post: any) {
         try {
-            const findOtp = await this.userOtp.findOne(({otp: post.token}))
+            const findOtp = await this.userOtp.findOne({where: {otp: post.token}, relations: ['user']})
             if (!findOtp) {
                 throw new UnauthorizedError('Token is invalid')
             }
             const otp = new OtpHelper()
-            const isVerified = otp.verifyTotp(findOtp.secret, post.token)
-            await this.userOtp.delete({id: findOtp.id})
+            const isVerified = otp.verifyTotp(findOtp.secret, post.token, 1)
+            const userId = findOtp.user.id
+            await this.userOtp.remove(findOtp)
             if (isVerified) {
-                const user = await this.users.findOne()
-                const findBearer = await this.bearers.findOne({where: {user}})
-                if (findBearer) {
-                    const bearer = new Bearer()
-                    bearer.bearer = uuidv4()
-                    bearer.user = user
-                    await this.bearers.delete(findBearer.bearer)
-                    await this.bearers.save(bearer)
-                    bearer.user = await this.users.findOne(user.id)
-                    return bearer
-                } else {
-                    const bearer = new Bearer()
-                    bearer.bearer = uuidv4()
-                    bearer.user = user
-                    await this.bearers.save(bearer)
-                    bearer.user = await this.users.findOne(user.id)
-                    return bearer
-                }
+                return this.users.findOne(userId)
             } else {
-                await this.userOtp.delete({id: findOtp.id})
+                await this.userOtp.remove(findOtp)
                 throw new UnauthorizedError('Token is invalid')
             }
         } catch (error) {
+            console.log(error)
             errorHelper(error, 'Token is invalid')
         }
     }

@@ -5,13 +5,11 @@ import {BadRequestError, ForbiddenError, InternalServerError} from 'routing-cont
 import {
     Column,
     CreateDateColumn,
-    Entity,
-    OneToMany, OneToOne,
+    Entity, OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm'
 
-import {Bearer} from './Bearer'
 import {UserOtp} from './UserOtp'
 
 @Entity()
@@ -43,9 +41,6 @@ export class User {
 
     @UpdateDateColumn()
     public updatedAt: Date
-
-    @OneToMany(() => Bearer, bearer => bearer.user, {onDelete: 'CASCADE'})
-    public bearers: Bearer[]
 
     @Exclude({toPlainOnly: true})
     public async setPassword(password: string): Promise<string> {

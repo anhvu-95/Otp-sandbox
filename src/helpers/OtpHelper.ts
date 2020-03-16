@@ -18,6 +18,7 @@ export class OtpHelper {
 
         for (let errorWindow = -window; errorWindow <= +window; errorWindow++) {
             const totp = this.generateTotp(secret, errorWindow)
+            console.log(totp)
             if (token === totp) {
                 return true
             }
